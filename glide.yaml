@@ -1,0 +1,5 @@
+package: github.com/vishen/go-experiments
+import:
+- package: github.com/google/gopacket
+  subpackages:
+  - pcap
