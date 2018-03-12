@@ -25,9 +25,29 @@ $ brew install pcap
 ```
 $ go build -o networktraffic .
 $ sudo ./networktraffic
+$ sudo ./networktraffic -d <device_name>
+$ sudo ./networktraffic -c <command_name>
+$ sudo ./networktraffic -p <pid>
+$ sudo ./networktraffic -t TCP
 ```
 
-Example output
+### CLI Options
+```
+networktraffic: filter and watch incoming and outgoing network traffic
+
+Usage:
+  networktraffic [flags]
+
+Flags:
+  -c, --command string   command name to filter network traffic for
+  -d, --device string    device name to use (can be found using ifconfig)
+  -h, --help             help for networktraffic
+  -p, --pid string       pid name to filter network traffic for
+  -t, --type string      type of traffic to watch: ALL, TCP, UDP, ARP or DNS (default "ALL")
+
+```
+
+### Example output
 ```
 Pcap Version=libpcap version 1.7.4
 2018/03/12 15:15:43 No addresses found for 'any'
@@ -51,4 +71,10 @@ device=wlp59s0 :: IPv4 TCP - 192.168.0.115:8009 -> 192.168.0.38:58810 (unknown -
 device=wlp59s0 :: IPv4 TCP - 192.168.0.38:58810 -> 192.168.0.115:8009 (chrome,2918 -> unknown) - seq=2819370311 ack=585518529 ACK
 device=wlp59s0 :: ARP IPv6HopByHop
 device=wlp59s0 :: ARP IPv6HopByHop
+```
+
+## TODO
+```
+- CLI options for multiples of an argument, is it possible? (multiple '-p -p')
+- Dump application layer data if requested
 ```
