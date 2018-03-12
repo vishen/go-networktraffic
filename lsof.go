@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	cacheTimeout = time.Second * 15
+	cacheTimeout = time.Second * 5
 )
 
 var (
@@ -34,9 +34,6 @@ func GetProcessFromLocalPort(port uint16) (*Process, error) {
 
 	p := &Process{}
 
-	//TODO(vishen): Handle the case when that port doesn't exist
-	// [IPv4] [UDP] (a0:99:9b:13:e1:5f) 192.168.0.31:60309 -> (ac:22:05:20:a0:d3) 192.168.0.1:53
-	// 2017/10/29 21:43:52 Error executing lsof command: exit status 1
 	d, err := exec.Command(lsofBin, "-i", fmt.Sprintf(":%d", port), "-FcnT").Output()
 	if err != nil {
 		return p, fmt.Errorf("Error executing lsof command: %s\n", err)

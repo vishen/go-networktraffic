@@ -7,9 +7,18 @@ Very useful video / blog https://www.devdungeon.com/content/packet-capture-injec
 
 ## Prerequisites
 ```
-- Mac OSX only (at the moment)
-- brew install pcap
+- pcap
 - sudo access
+```
+
+### Linux
+```
+$ sudo apt-get install libpcap-dev
+```
+
+### Mac
+```
+$ brew install pcap
 ```
 
 ## Running
@@ -20,39 +29,26 @@ $ sudo ./networktraffic
 
 Example output
 ```
-Pcap Version=libpcap version 1.8.1 -- Apple version 67.60.1
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.168.0.2:56783 -> (xx:xx:xx:xx:xx:xx) 151.101.60.133:443
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.168.0.2:56778 -> (xx:xx:xx:xx:xx:xx) 151.101.60.133:443
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.168.0.2:56776 -> (xx:xx:xx:xx:xx:xx) 151.101.60.133:443
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.168.0.2:56775 -> (xx:xx:xx:xx:xx:xx) 151.101.60.133:443
-[334] Google Chrome: IPv4 UDP (xx:xx:xx:xx:xx:xx) 209.85.202.189:443 -> (xx:xx:xx:xx:xx:xx) 192.168.0.2:65383
-[334] Google Chrome: IPv4 UDP (xx:xx:xx:xx:xx:xx) 192.168.0.2:65383 -> (xx:xx:xx:xx:xx:xx) 209.85.202.189:443
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 151.101.60.133:443 -> (xx:xx:xx:xx:xx:xx) 192.168.0.2:56785
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 151.101.60.133:443 -> (xx:xx:xx:xx:xx:xx) 192.168.0.2:56778
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 151.101.60.133:443 -> (xx:xx:xx:xx:xx:xx) 192.168.0.2:56775
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 151.101.60.133:443 -> (xx:xx:xx:xx:xx:xx) 192.168.0.2:56783
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 151.101.60.133:443 -> (xx:xx:xx:xx:xx:xx) 192.168.0.2:56776
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.168.0.2:56793 -> (xx:xx:xx:xx:xx:xx) 192.30.253.125:443
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.30.253.125:443 -> (xx:xx:xx:xx:xx:xx) 192.168.0.2:56793
-[339] WhatsApp: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.168.0.2:55132 -> (xx:xx:xx:xx:xx:xx) 158.85.224.178:443
-[339] WhatsApp: IPv4 TCP (xx:xx:xx:xx:xx:xx) 158.85.224.178:443 -> (xx:xx:xx:xx:xx:xx) 192.168.0.2:55132
-[339] WhatsApp: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.168.0.2:55132 -> (xx:xx:xx:xx:xx:xx) 158.85.224.178:443
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.168.0.2:55123 -> (xx:xx:xx:xx:xx:xx) 192.168.0.115:8009
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.168.0.115:8009 -> (xx:xx:xx:xx:xx:xx) 192.168.0.2:55123
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.168.0.2:55123 -> (xx:xx:xx:xx:xx:xx) 192.168.0.115:8009
-[18645] Spotify: IPv4 UDP (xx:xx:xx:xx:xx:xx) 192.168.0.2:54177 -> (xx:xx:xx:xx:xx:xx 239.255.255.250:1900
-[18645] Spotify: IPv4 UDP (xx:xx:xx:xx:xx:xx) 192.168.0.115:46183 -> (xx:xx:xx:xx:xx:xx) 192.168.0.2:54177
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 169.54.204.231:443 -> (xx:xx:xx:xx:xx:xx) 192.168.0.2:55269
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.168.0.2:55269 -> (xx:xx:xx:xx:xx:xx) 169.54.204.231:443
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 192.168.0.2:55269 -> (xx:xx:xx:xx:xx:xx) 169.54.204.231:443
-[334] Google Chrome: IPv4 TCP (xx:xx:xx:xx:xx:xx) 169.54.204.231:443 -> (xx:xx:xx:xx:xx:xx) 192.168.0.2:55269
-```
-
-## TODO:
-```
-- Add packet size?
-- Add signal handler to then show stats on exiting?
-- Don't error on DNS lookups, and maybe print it nicer
-- Print ARP calls in a nicer way
-- Attempt to inspect HTTP traffic?
+Pcap Version=libpcap version 1.7.4
+2018/03/12 15:15:43 No addresses found for 'any'
+2018/03/12 15:15:43 No addresses found for 'bluetooth0'
+2018/03/12 15:15:43 No addresses found for 'nflog'
+2018/03/12 15:15:43 No addresses found for 'nfqueue'
+2018/03/12 15:15:43 No addresses found for 'usbmon1'
+2018/03/12 15:15:43 No addresses found for 'usbmon2'
+2018/03/12 15:15:43 Starting pcap for device 'wlp59s0'
+2018/03/12 15:15:43 Starting pcap for device 'lo'
+2018/03/12 15:15:43 Starting pcap for device 'docker0'
+2018/03/12 15:15:43 Starting pcap for device 'br-f4ae56ed08f9'
+device=wlp59s0 :: IPv6 IPv6HopByHop
+device=lo :: IPv4 UDP - 127.0.0.1:53052 -> 127.0.1.1:53
+device=wlp59s0 :: IPv4 TCP - 192.168.0.38:59128 -> 52.11.229.118:443 (chrome,2918 -> unknown) - seq=3969154339 ack=1271874429 ACK
+device=lo :: IPv4 UDP - 127.0.0.1:53052 -> 127.0.1.1:53
+device=lo :: IPv4 UDP - 127.0.1.1:53 -> 127.0.0.1:53052
+device=wlp59s0 :: IPv4 TCP - 192.168.0.38:58810 -> 192.168.0.115:8009 (chrome,2918 -> unknown) - seq=2819370194 ack=585518410 PSH ACK
+device=wlp59s0 :: IPv4 TCP - 52.11.229.118:443 -> 192.168.0.38:59128 (unknown -> chrome,2918) - seq=1271874429 ack=3969154340 ACK
+device=wlp59s0 :: IPv4 TCP - 192.168.0.115:8009 -> 192.168.0.38:58810 (unknown -> chrome,2918) - seq=585518410 ack=2819370311 PSH ACK
+device=wlp59s0 :: IPv4 TCP - 192.168.0.38:58810 -> 192.168.0.115:8009 (chrome,2918 -> unknown) - seq=2819370311 ack=585518529 ACK
+device=wlp59s0 :: ARP IPv6HopByHop
+device=wlp59s0 :: ARP IPv6HopByHop
 ```

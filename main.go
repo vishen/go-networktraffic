@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/gopacket"
@@ -13,9 +14,8 @@ import (
 )
 
 var (
-	deviceToUse  string = "en0"
-	snapshot_len int32  = 1024
-	promiscuous  bool   = false
+	snapshot_len int32 = 1024
+	promiscuous  bool  = false
 	err          error
 	timeout      time.Duration = 30 * time.Second
 	handle       *pcap.Handle
@@ -23,17 +23,17 @@ var (
 
 type Device struct {
 	name string
-	ip   net.IP
+	ips  []net.IP
 }
 
 type Packet struct {
 	device Device
 
 	// Process Information
-	commandName string
-	pid         string
-	fileName    string
-	TST         string
+	srcCommandName  string
+	srcPid          string
+	destCommandName string
+	destPid         string
 
 	// Ethernet layer
 	srcMAC       net.HardwareAddr
@@ -55,7 +55,7 @@ type Packet struct {
 	SYN bool // SYN - Initiates a connection
 	RST bool // RST -Aborts a connection in response to an error
 	ACK bool // ACK - Acknowledges received data
-	PSH bool // PSH - Indicates that the data should be pushed immediatelt
+	PSH bool // PSH - Indicates that the data should be pushed immediately
 	URG bool
 	ECE bool
 	CWR bool
@@ -63,13 +63,51 @@ type Packet struct {
 }
 
 func (p Packet) prettyPrint() {
-	fmt.Printf("[%s] %s: %s %s (%s) %s:%d -> (%s) %s:%d\n", p.pid, p.commandName, p.ethernetType, p.protocol, p.srcMAC, p.srcIP, p.srcPort, p.destMAC, p.destIP, p.destPort)
+	sb := strings.Builder{}
+	sb.WriteString(fmt.Sprintf("device=%s :: %s %s", p.device.name, p.ethernetType, p.protocol))
 
-	/*fmt.Printf("(%s) %s %s %s\n", p.pid, p.commandName, p.fileName, p.TST)
+	if p.srcIP != nil && p.destIP != nil {
+		sb.WriteString(fmt.Sprintf(" - %s:%d -> %s:%d", p.srcIP, p.srcPort, p.destIP, p.destPort))
+	}
+
+	if p.srcPid != "" || p.destPid != "" {
+		var src string
+		if p.srcPid != "" {
+			src = fmt.Sprintf("%s,%s", p.srcCommandName, p.srcPid)
+		} else {
+			src = "unknown"
+		}
+
+		var dest string
+		if p.destPid != "" {
+			dest = fmt.Sprintf("%s,%s", p.destCommandName, p.destPid)
+		} else {
+			dest = "unknown"
+		}
+
+		sb.WriteString(fmt.Sprintf(" (%s -> %s)", src, dest))
+	}
+
 	if p.protocol == layers.IPProtocolTCP {
-		fmt.Printf("\tsequence=%d, acknowledged=%d\n", p.seq, p.ack)
-		fmt.Printf("\tFIN=%t, SYN=%t, RST=%t, PSH=%t, ACK=%t\n", p.FIN, p.SYN, p.RST, p.PSH, p.ACK)
-	}*/
+		sb.WriteString(fmt.Sprintf(" - seq=%d ack=%d", p.seq, p.ack))
+		if p.FIN {
+			sb.WriteString(" FIN")
+		}
+		if p.SYN {
+			sb.WriteString(" SYN")
+		}
+		if p.RST {
+			sb.WriteString(" RST")
+		}
+		if p.PSH {
+			sb.WriteString(" PSH")
+		}
+		if p.ACK {
+			sb.WriteString(" ACK")
+		}
+	}
+
+	fmt.Println(sb.String())
 
 }
 
@@ -127,26 +165,25 @@ func NewPacket(packet gopacket.Packet, device Device) (*Packet, error) {
 	// Attempt to get lsof of the port
 	if p.protocol == layers.IPProtocolTCP || p.protocol == layers.IPProtocolUDP {
 
-		var port uint16
-		if p.device.ip.Equal(p.srcIP) {
-			port = p.srcPort
-		} else if p.device.ip.Equal(p.destIP) {
-			port = p.destPort
-		} else {
-			log.Printf("[ERROR] Error finding local address from srcIP=%s or destIP=%s\n", p.srcIP, p.destIP)
-			return p, nil
+		for _, deviceIP := range device.ips {
+			if deviceIP.Equal(p.srcIP) {
+				processInfo, err := GetProcessFromLocalPort(p.srcPort)
+				if err != nil {
+					continue
+				}
+				p.srcCommandName = processInfo.commandName
+				p.srcPid = processInfo.pid
+			} else if deviceIP.Equal(p.destIP) {
+				processInfo, err := GetProcessFromLocalPort(p.destPort)
+				if err != nil {
+					continue
+				}
+				p.destCommandName = processInfo.commandName
+				p.destPid = processInfo.pid
+			} else {
+				continue
+			}
 		}
-
-		processInfo, err := GetProcessFromLocalPort(port)
-		if err != nil {
-			log.Printf("[ERROR] Error finding lsof of port '%d': %s", port, err)
-			return p, nil
-		}
-
-		p.pid = processInfo.pid
-		p.commandName = processInfo.commandName
-		p.fileName = processInfo.fileName
-		p.TST = processInfo.TST
 	}
 
 	return p, nil
@@ -163,47 +200,60 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var mainDevice Device
+	var foundDevices []Device
 
 	// Print device information
 	for _, device := range devices {
-		if device.Name == deviceToUse {
-			addresses := device.Addresses
-			if len(addresses) != 1 {
-				log.Fatalf("Device addresses for '%s' was an unexpected amount: %+v\n", device.Name, addresses)
-			}
-
-			mainDevice = Device{
-				name: device.Name,
-				ip:   addresses[0].IP,
-			}
-		}
-	}
-
-	if mainDevice.name == "" {
-		log.Fatalf("Did not find device '%s'", deviceToUse)
-	}
-
-	// Open device
-	handle, err = pcap.OpenLive(mainDevice.name, snapshot_len, promiscuous, timeout)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer handle.Close()
-
-	// Use the handle as a packet source to process all packets
-	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-	for packet := range packetSource.Packets() {
-		// printPacketInfo(packet)
-
-		p, err := NewPacket(packet, mainDevice)
-		if err != nil {
-			fmt.Printf("Error creating new packet: %s\n", err)
+		addresses := device.Addresses
+		if len(addresses) == 0 {
+			log.Printf("No addresses found for '%s'", device.Name)
 			continue
 		}
-		p.prettyPrint()
 
+		d := Device{
+			name: device.Name,
+			ips:  make([]net.IP, len(addresses)),
+		}
+
+		for _, addr := range addresses {
+			d.ips = append(d.ips, addr.IP)
+		}
+
+		foundDevices = append(foundDevices, d)
 	}
+
+	wg := sync.WaitGroup{}
+	for _, device := range foundDevices {
+		log.Printf("Starting pcap for device '%s'\n", device.name)
+		wg.Add(1)
+		go func(d Device) {
+			// Open device
+			handle, err = pcap.OpenLive(d.name, snapshot_len, promiscuous, timeout)
+			if err != nil {
+				log.Printf("error opening pcap handle for '%s': %v", d.name, err)
+				wg.Done()
+				return
+			}
+			defer handle.Close()
+
+			// Use the handle as a packet source to process all packets
+			packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+			for packet := range packetSource.Packets() {
+				// printPacketInfo(packet)
+
+				p, err := NewPacket(packet, d)
+				if err != nil {
+					fmt.Printf("Error creating new packet: %s\n", err)
+					continue
+				}
+				p.prettyPrint()
+
+			}
+		}(device)
+	}
+
+	wg.Wait()
+	fmt.Println("Finished")
 }
 
 func printPacketInfo(packet gopacket.Packet) {
