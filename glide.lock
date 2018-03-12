@@ -1,9 +1,15 @@
-hash: 8a744465e5f94cab2321e50fce1da47488e3ab4ff5e9e4b9b2b1cff4d17fb5c7
-updated: 2017-10-29T18:36:36.869343854Z
+hash: 09b5ca63ec70c0500c68822dd43eae61f10e81088ba8d021baf1da5eba7d4dd6
+updated: 2018-03-12T17:36:25.502993379Z
 imports:
 - name: github.com/google/gopacket
   version: b4efbcb7f32ff9331ca217f0b4799b39118e28d6
   subpackages:
   - layers
   - pcap
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/spf13/cobra
+  version: 7b2c5ac9fc04fc5efafb60700713d4fa609b777b
+- name: github.com/spf13/pflag
+  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 testImports: []

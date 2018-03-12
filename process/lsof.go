@@ -1,4 +1,4 @@
-package main
+package process
 
 import (
 	"fmt"
@@ -18,9 +18,9 @@ var (
 )
 
 type Process struct {
-	pid         string
-	commandName string
-	fileName    string
+	PID         string
+	CommandName string
+	Filename    string
 	TST         string
 
 	addedTime time.Time
@@ -42,11 +42,11 @@ func GetProcessFromLocalPort(port uint16) (*Process, error) {
 	for _, line := range strings.Split(strings.TrimSpace(string(d)), "\n") {
 		switch line[0] {
 		case 'p':
-			p.pid = line[1:]
+			p.PID = line[1:]
 		case 'c':
-			p.commandName = line[1:]
+			p.CommandName = line[1:]
 		case 'n':
-			p.fileName = line[1:]
+			p.Filename = line[1:]
 		case 'T':
 			if line[:3] == "TST" {
 				p.TST = line[4:]
